@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var usbDetect = require('usb-detection');
+var usb = require('usb');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -21,6 +23,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+usbDetect.startMonitoring();
+usbDetect.on('add', function(device) { console.log('add', device); });
+usbDetect.on('remove', function(device) { console.log('remove', device); });
+app.use('*', () => {
+  console.log(usb.getDeviceList())
+});
+
+usb.on('attach', function(device) { 
+  console.log('Hello usb', device)
+ });
+
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -37,5 +52,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+app.listen(3000, () => console.log('App is running on port'))
 
 module.exports = app;
